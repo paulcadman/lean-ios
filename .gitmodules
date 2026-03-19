@@ -1,3 +1,6 @@
 [submodule "lean4"]
 	path = lean4
 	url = https://github.com/paulcadman/lean4.git
+[submodule "third-party/SDL"]
+	path = third-party/SDL
+	url = https://github.com/libsdl-org/SDL.git
