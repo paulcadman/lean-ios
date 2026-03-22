@@ -12,5 +12,6 @@ lean_obj_res lean_sdl_render_clear(void);
 lean_obj_res lean_sdl_render_fill_rect(double x, double y, double w, double h);
 lean_obj_res lean_sdl_render_present(void);
 lean_obj_res lean_sdl_shutdown(void);
+lean_obj_res lean_sdl_get_frame_time(void);
 
 #endif

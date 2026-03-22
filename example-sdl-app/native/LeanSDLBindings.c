@@ -1,12 +1,13 @@
+#include "LeanSDLBindings.h"
 #include <stdbool.h>
 #include <stdint.h>
-
-#include <lean/lean.h>
 
 #include <SDL3/SDL.h>
 
 static SDL_Window *g_window = NULL;
 static SDL_Renderer *g_renderer = NULL;
+static Uint64 g_last_present_time_ns = 0;
+static double g_frame_time_seconds = 0.0;
 
 static inline lean_obj_res lean_sdl_error(const char *msg) {
   return lean_io_result_mk_error(lean_mk_io_user_error(lean_mk_string(msg)));
@@ -125,6 +126,15 @@ lean_obj_res lean_sdl_render_present(void) {
   if (!SDL_RenderPresent(g_renderer)) {
     return lean_sdl_error(SDL_GetError());
   }
+
+  Uint64 now = SDL_GetTicksNS();
+  if (g_last_present_time_ns != 0 && now >= g_last_present_time_ns) {
+    g_frame_time_seconds =
+        (double)(now - g_last_present_time_ns) / 1000000000.0;
+  } else {
+    g_frame_time_seconds = 0.0;
+  }
+  g_last_present_time_ns = now;
   return lean_io_result_mk_ok(lean_box(0));
 }
 
@@ -139,4 +149,8 @@ lean_obj_res lean_sdl_shutdown(void) {
   }
   SDL_Quit();
   return lean_io_result_mk_ok(lean_box(0));
+}
+
+lean_obj_res lean_sdl_get_frame_time(void) {
+  return lean_io_result_mk_ok(lean_box_float(g_frame_time_seconds));
 }

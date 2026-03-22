@@ -12,8 +12,8 @@ structure AppState where
   maxY : Float
 deriving Inhabited
 
-def bounce (pos vel limit : Float) : Float × Float :=
-  let next := pos + vel
+def bounce (pos vel limit dt : Float) : Float × Float :=
+  let next := pos + vel * dt
   if next < 0.0 then
     (-next, -vel)
   else if next > limit then
@@ -43,8 +43,8 @@ def sdlInit : IO Unit := do
     frame := 0
     x := 0.0
     y := 0.0
-    dx := 2.0
-    dy := 2.0
+    dx := 120.0
+    dy := 120.0
     maxX := maxX
     maxY := maxY
   }
@@ -52,8 +52,9 @@ def sdlInit : IO Unit := do
 @[export sdlIterate]
 def sdlIterate : IO Unit := do
   let state ← appState.get
-  let (x, dx) := bounce state.x state.dx state.maxX
-  let (y, dy) := bounce state.y state.dy state.maxY
+  let frameDt := min (← SDL.getFrameTime) 0.25
+  let (x, dx) := bounce state.x state.dx state.maxX frameDt
+  let (y, dy) := bounce state.y state.dy state.maxY frameDt
   SDL.setRenderDrawColor 255 255 255 255
   SDL.renderClear
   SDL.setRenderDrawColor 0 0 0 255

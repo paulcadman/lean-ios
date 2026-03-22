@@ -27,4 +27,7 @@ opaque renderPresent : IO Unit
 @[extern "lean_sdl_shutdown"]
 opaque shutdown : IO Unit
 
+@[extern "lean_sdl_get_frame_time"]
+opaque getFrameTime : IO Float
+
 end SDL
