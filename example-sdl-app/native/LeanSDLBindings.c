@@ -37,6 +37,9 @@ lean_sdl_setup_fullscreen_window_and_renderer(b_lean_obj_arg title) {
     g_window = NULL;
   }
 
+  g_last_present_time_ns = 0;
+  g_frame_time_seconds = 0.0;
+
   g_window = SDL_CreateWindow(lean_string_cstr(title), 0, 0, window_flags);
   if (g_window == NULL) {
     return lean_sdl_error(SDL_GetError());
@@ -154,6 +157,8 @@ lean_obj_res lean_sdl_shutdown(void) {
     SDL_DestroyWindow(g_window);
     g_window = NULL;
   }
+  g_last_present_time_ns = 0;
+  g_frame_time_seconds = 0.0;
   SDL_Quit();
   return lean_io_result_mk_ok(lean_box(0));
 }
