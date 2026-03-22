@@ -17,6 +17,7 @@ structure AppState where
   maxX : Float
   maxY : Float
   accumulator : Float
+  square : Option SDL.Texture
 deriving Inhabited
 
 def bounce (pos vel limit dt : Float) : Float × Float :=
@@ -37,6 +38,7 @@ initialize appState : IO.Ref AppState <- IO.mkRef {
   maxX := 0.0
   maxY := 0.0
   accumulator := 0.0
+  square := none
 }
 
 @[export sdlInit]
@@ -47,6 +49,7 @@ def sdlInit : IO Unit := do
   let height ← SDL.getWindowHeight
   let maxX := max 0.0 (width.toFloat - squareSize)
   let maxY := max 0.0 (height.toFloat - squareSize)
+  let square ← SDL.loadSvgTexture "bouncing_square.svg"
   appState.set {
     frame := 0
     x := 0.0
@@ -56,6 +59,7 @@ def sdlInit : IO Unit := do
     maxX := maxX
     maxY := maxY
     accumulator := 0.0
+    square := some square
   }
 
 @[export sdlIterate]
@@ -79,17 +83,23 @@ def sdlIterate : IO Unit := do
         maxX := stepped.maxX
         maxY := stepped.maxY
         accumulator := remaining - tickDt
+        square := state.square
       }
       remaining := remaining - tickDt
     stepped := { stepped with accumulator := remaining }
   SDL.setRenderDrawColor 255 255 255 255
   SDL.renderClear
-  SDL.setRenderDrawColor 0 0 0 255
-  SDL.renderFillRect
-    stepped.x
-    stepped.y
-    squareSize
-    squareSize
+
+  match stepped.square with
+  | none => do
+    SDL.setRenderDrawColor 0 0 0 255
+    SDL.renderFillRect
+      stepped.x
+      stepped.y
+      squareSize
+      squareSize
+  | some t => do
+    SDL.renderTexture t stepped.x stepped.y squareSize squareSize
   SDL.renderPresent
   appState.set stepped
 

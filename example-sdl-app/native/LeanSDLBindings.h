@@ -3,6 +3,8 @@
 
 #include <lean/lean.h>
 
+lean_obj_res lean_sdl_load_svg_texture(b_lean_obj_arg path_arg);
+lean_obj_res lean_sdl_render_texture(b_lean_obj_arg texture, double x, double y, double width, double height);
 lean_obj_res lean_sdl_init_video(void);
 lean_obj_res lean_sdl_setup_fullscreen_window_and_renderer(b_lean_obj_arg title);
 lean_obj_res lean_sdl_get_window_width(void);

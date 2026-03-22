@@ -1,5 +1,7 @@
 namespace SDL
 
+opaque Texture : Type
+
 @[extern "lean_sdl_init_video"]
 opaque initVideo : IO Unit
 
@@ -29,5 +31,11 @@ opaque shutdown : IO Unit
 
 @[extern "lean_sdl_get_frame_time"]
 opaque getFrameTime : IO Float
+
+@[extern "lean_sdl_load_svg_texture"]
+opaque loadSvgTexture : @& String → IO Texture
+
+@[extern "lean_sdl_render_texture"]
+opaque renderTexture : @& Texture → (x : Float) → (y : Float) → (width : Float) → (height : Float) → IO Unit
 
 end SDL

@@ -2,6 +2,9 @@ name = "example_sdl_app"
 version = "0.1.0"
 defaultTargets = ["ExampleSDLApp"]
 
+[leanOptions]
+autoImplicit = false
+
 [[lean_lib]]
 name = "ExampleSDLApp"
 srcDir = "lean"

@@ -1,4 +1,11 @@
 #include "LeanSDLBindings.h"
+#include "SDL3/SDL_blendmode.h"
+#include "SDL3/SDL_error.h"
+#include "SDL3/SDL_render.h"
+#include "SDL3/SDL_stdinc.h"
+#include "SDL3/SDL_surface.h"
+#include "lean/lean.h"
+#include "resvg.h"
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -9,8 +16,90 @@ static SDL_Renderer *g_renderer = NULL;
 static Uint64 g_last_present_time_ns = 0;
 static double g_frame_time_seconds = 0.0;
 
+static lean_external_class *g_sdl_texture_class = NULL;
+
+static void sdl_texture_finalizer(void *ptr) {
+  if (ptr != NULL) {
+    SDL_DestroyTexture((SDL_Texture *)ptr);
+  }
+}
+
+static void noop_foreach(void *mod, b_lean_obj_arg fn) {}
+
+static lean_external_class *get_sdl_texture_class(void) {
+  if (g_sdl_texture_class == NULL) {
+    g_sdl_texture_class =
+        lean_register_external_class(&sdl_texture_finalizer, noop_foreach);
+  }
+  return g_sdl_texture_class;
+}
+
+static SDL_Texture *texture_of_arg(b_lean_obj_arg texture) {
+  return (SDL_Texture *)lean_get_external_data(texture);
+}
+
+static lean_object *lean_sdl_texture_mk(void *texture) {
+  return lean_alloc_external(get_sdl_texture_class(), texture);
+}
+
 static inline lean_obj_res lean_sdl_error(const char *msg) {
   return lean_io_result_mk_error(lean_mk_io_user_error(lean_mk_string(msg)));
+}
+
+lean_obj_res lean_sdl_load_svg_texture(b_lean_obj_arg path_arg) {
+    const char* path = lean_string_cstr(path_arg);
+    resvg_options *opts = resvg_options_create();
+    resvg_render_tree *tree;
+    uint32_t parse_result = resvg_parse_tree_from_file(path, opts, &tree);
+    resvg_options_destroy(opts);
+
+    if (parse_result != RESVG_OK) {
+        return lean_sdl_error("resvg_parse_tree_from_file failed");
+    }
+
+    resvg_size image_size = resvg_get_image_size(tree);
+    uint32_t width = image_size.width;
+    uint32_t height = image_size.height;
+    char* pixels = (char *)SDL_calloc((size_t)width * (size_t)height, 4);
+    if (pixels == NULL) {
+        resvg_tree_destroy(tree);
+        return lean_sdl_error("SDL_calloc failed");
+    }
+
+    resvg_render(tree, resvg_transform_identity(), width, height, pixels);
+    resvg_tree_destroy(tree);
+
+    SDL_Surface *surface = SDL_CreateSurfaceFrom(width, height, SDL_PIXELFORMAT_RGBA32, pixels, width * 4);
+    if (surface == NULL) {
+        SDL_free(pixels);
+        return lean_sdl_error(SDL_GetError());
+    }
+
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(g_renderer, surface);
+    SDL_DestroySurface(surface);
+    SDL_free(pixels);
+
+    if (texture == NULL) {
+        return lean_sdl_error(SDL_GetError());
+    }
+
+    if (!SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND)) {
+        SDL_DestroyTexture(texture);
+        return lean_sdl_error(SDL_GetError());
+    }
+
+    return lean_io_result_mk_ok(lean_sdl_texture_mk(texture));
+}
+
+lean_obj_res lean_sdl_render_texture(b_lean_obj_arg texture, double x, double y, double width, double height) {
+    if (g_renderer == NULL) {
+        return lean_sdl_error("renderer not initalizied");
+    }
+    SDL_FRect rect = {.x = (float)x, .y = (float)y, .w = (float)width, .h = (float)height};
+    if (!SDL_RenderTexture(g_renderer, texture_of_arg(texture), NULL, &rect)) {
+        return lean_sdl_error(SDL_GetError());
+    }
+    return lean_io_result_mk_ok(lean_box(0));
 }
 
 lean_obj_res lean_sdl_init_video(void) {
@@ -115,14 +204,10 @@ lean_obj_res lean_sdl_render_clear(void) {
 }
 
 lean_obj_res lean_sdl_render_fill_rect(double x, double y, double w, double h) {
-  SDL_FRect rect;
   if (g_renderer == NULL) {
     return lean_sdl_error("renderer not initialized");
   }
-  rect.x = (float)x;
-  rect.y = (float)y;
-  rect.w = (float)w;
-  rect.h = (float)h;
+  SDL_FRect rect = {.x = (double)x, .y = (double)y, .w = (double)w, .h = (double)h};
   if (!SDL_RenderFillRect(g_renderer, &rect)) {
     return lean_sdl_error(SDL_GetError());
   }
