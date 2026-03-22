@@ -4,11 +4,8 @@ LEAN_SRC_DIR := lean4
 LEAN_PREFIX := $(shell lean --print-prefix)
 IOS_SDK ?= iphonesimulator
 IOS_DEPLOYMENT_TARGET ?= 16.0
-IOS_TARGET ?= arm64-apple-ios$(IOS_DEPLOYMENT_TARGET)
+IOS_TARGET ?= arm64-apple-ios$(IOS_DEPLOYMENT_TARGET)-simulator
 SDK_TAG := $(subst -,_,$(subst .,_,$(IOS_TARGET)))
-SIMULATOR_SDK ?= iphonesimulator
-SIMULATOR_TARGET ?= arm64-apple-ios$(IOS_DEPLOYMENT_TARGET)-simulator
-SIMULATOR_SDK_TAG := $(subst -,_,$(subst .,_,$(SIMULATOR_TARGET)))
 
 BUILD_DIR := build
 LEAN_RUNTIME_BUILD_DIR := $(BUILD_DIR)/lean4-$(SDK_TAG)-runtime
@@ -22,7 +19,7 @@ STDLIB_INIT_LIB_LEANMAKE := $(LIB_DIR)/libInit.a
 AR := xcrun --sdk $(IOS_SDK) ar
 IOS_LEANC := $(abspath scripts/ios-leanc.sh)
 
-.PHONY: all runtime stdlib-init sim-runtime clean
+.PHONY: all runtime stdlib-init clean
 
 all: runtime stdlib-init
 
@@ -63,9 +60,6 @@ $(STDLIB_INIT_LIB_LEANMAKE): $(RUNTIME_LIB) $(IOS_LEANC)
 	  OUT="$(abspath $(IOS_BUILD_DIR))/leanmake" \
 	  TEMP_OUT="$(abspath $(IOS_BUILD_DIR))/leanmake/temp" \
 	  LIB_OUT="$(abspath $(LIB_DIR))"
-
-sim-runtime:
-	$(MAKE) IOS_SDK="$(SIMULATOR_SDK)" IOS_TARGET="$(SIMULATOR_TARGET)" IOS_DEPLOYMENT_TARGET="$(IOS_DEPLOYMENT_TARGET)" runtime stdlib-init
 
 clean:
 	rm -rf $(BUILD_DIR)
