@@ -11,9 +11,7 @@
 extern "C" {
 #endif
 
-typedef lean_object *(*lean_module_initializer_fn)(uint8_t builtin);
-
-bool lean_runtime_initialize_modules(const lean_module_initializer_fn *modules, size_t module_count);
+bool lean_runtime_initialize_root_module(void);
 
 #ifdef __cplusplus
 }

@@ -1,9 +1,15 @@
 #include "LeanRuntimeBridge.h"
 
+#ifndef LEAN_APP_ROOT_MODULE
+#error "LEAN_APP_ROOT_MODULE must be defined to the root Lean module initializer"
+#endif
+
+extern lean_object * LEAN_APP_ROOT_MODULE(uint8_t builtin);
+
 void lean_initialize_runtime_module(void);
 void lean_initialize_thread(void);
 
-bool lean_runtime_initialize_modules(const lean_module_initializer_fn *modules, size_t module_count) {
+bool lean_runtime_initialize_root_module(void) {
     static bool runtime_initialized = false;
 
     if (!runtime_initialized) {
@@ -12,14 +18,12 @@ bool lean_runtime_initialize_modules(const lean_module_initializer_fn *modules, 
         runtime_initialized = true;
     }
 
-    for (size_t i = 0; i < module_count; ++i) {
-        lean_object *result = modules[i](1);
-        if (lean_io_result_is_error(result)) {
-            lean_dec_ref(result);
-            return false;
-        }
+    lean_object *result = LEAN_APP_ROOT_MODULE(1);
+    if (lean_io_result_is_error(result)) {
         lean_dec_ref(result);
+        return false;
     }
 
+    lean_dec_ref(result);
     return true;
 }
