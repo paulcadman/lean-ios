@@ -48,9 +48,9 @@ APP_FRAMEWORKS_DIR := $(APP_DIR)/Frameworks
 APP_SDL_FRAMEWORK := $(APP_FRAMEWORKS_DIR)/SDL3.framework
 APP_SDL_TTF_FRAMEWORK := $(APP_FRAMEWORKS_DIR)/SDL3_ttf.framework
 APP_LIB_TARGET := ExampleSDLApp:static
-APP_BINDINGS_SRC := $(APP_NATIVE_DIR)/LeanSDLBindings.c
-APP_BINDINGS_HEADER := $(APP_NATIVE_DIR)/LeanSDLBindings.h
-APP_BINDINGS_OBJ := $(APP_OBJ_DIR)/LeanSDLBindings.o
+SDL_BINDINGS_LIB_TARGET := SDLBindings:static
+SDL_BINDINGS_DIR := $(ROOT_DIR)/sdl-bindings
+SDL_BINDINGS_STATIC_LIB := $(SDL_BINDINGS_DIR)/.lake/build/lib/libsdl__bindings_SDLBindings.a
 APP_RUNTIME_BRIDGE_SRC := $(APP_NATIVE_DIR)/LeanRuntimeBridge.c
 APP_RUNTIME_BRIDGE_HEADER := $(APP_NATIVE_DIR)/LeanRuntimeBridge.h
 APP_ROOT_MODULE_INITIALIZER := initialize_example__sdl__app_ExampleSDL
@@ -159,26 +159,9 @@ app-lib: runtime
 	LEAN_RUNTIME_INCLUDE="$(abspath $(RUNTIME_BUILD_DIR))/include" \
 	LEAN_STAGE0_INCLUDE="$(abspath $(LEAN_SRC_DIR))/stage0/src/include" \
 	LEAN_SRC_INCLUDE="$(abspath $(LEAN_SRC_DIR))/src/include" \
-	lake build $(APP_LIB_TARGET)
+	lake build $(APP_LIB_TARGET) $(SDL_BINDINGS_LIB_TARGET)
 	mkdir -p $(APP_BUILD_DIR)
 	cp "$$(lake query $(APP_LIB_TARGET))" $(APP_STATIC_LIB)
-
-$(APP_BINDINGS_OBJ): $(APP_BINDINGS_SRC) $(APP_BINDINGS_HEADER) $(SDL_XCFRAMEWORK_INFO) $(SDL_TTF_XCFRAMEWORK_INFO) $(RESVG_LIB)
-	mkdir -p $(APP_OBJ_DIR)
-	xcrun --sdk $(IOS_SDK) clang \
-	  -target $(IOS_TARGET) \
-	  -isysroot $(IOS_SDK_PATH) \
-	  $(APP_MIN_VERSION_FLAG) \
-	  -I$(RUNTIME_BUILD_DIR)/include \
-	  -I$(LEAN_SRC_DIR)/stage0/src/include \
-	  -I$(LEAN_SRC_DIR)/src/include \
-	  -I$(ROOT_DIR)/third-party/SDL_ttf/include \
-		-I$(RESVG_INCLUDE_DIR) \
-	  -F$(dir $(SDL_FRAMEWORK_SOURCE)) \
-	  -F$(dir $(SDL_TTF_FRAMEWORK_SOURCE)) \
-	  $(APP_PROJECT_CFLAGS) \
-	  -c $(APP_BINDINGS_SRC) \
-	  -o $(APP_BINDINGS_OBJ)
 
 $(APP_RUNTIME_BRIDGE_OBJ): $(APP_RUNTIME_BRIDGE_SRC) $(APP_RUNTIME_BRIDGE_HEADER)
 	mkdir -p $(APP_OBJ_DIR)
@@ -239,7 +222,7 @@ $(APP_ASSET_STAMP): $(shell find $(APP_ASSETS_DIR) -type f)
 	rsync -a $(APP_ASSETS_DIR)/ $(APP_ASSETS_DEST_DIR)/
 	touch $(APP_ASSET_STAMP)
 
-$(APP_BIN): app-lib $(APP_STATIC_LIB) $(SDL_XCFRAMEWORK_INFO) $(SDL_TTF_XCFRAMEWORK_INFO) $(RESVG_LIB) $(APP_BINDINGS_OBJ) $(APP_RUNTIME_BRIDGE_OBJ) $(APP_BRIDGE_OBJ) $(APP_MAIN_OBJ)
+$(APP_BIN): app-lib $(APP_STATIC_LIB) $(SDL_BINDINGS_STATIC_LIB) $(SDL_XCFRAMEWORK_INFO) $(SDL_TTF_XCFRAMEWORK_INFO) $(RESVG_LIB) $(APP_RUNTIME_BRIDGE_OBJ) $(APP_BRIDGE_OBJ) $(APP_MAIN_OBJ)
 	mkdir -p $(APP_DIR)
 	SDKROOT="$(IOS_SDK_PATH)" xcrun --sdk $(IOS_SDK) clang++ \
 	  -target $(IOS_TARGET) \
@@ -251,7 +234,7 @@ $(APP_BIN): app-lib $(APP_STATIC_LIB) $(SDL_XCFRAMEWORK_INFO) $(SDL_TTF_XCFRAMEW
 	  -F$(dir $(SDL_TTF_FRAMEWORK_SOURCE)) \
 	  $(APP_MAIN_OBJ) \
 	  $(APP_STATIC_LIB) \
-	  $(APP_BINDINGS_OBJ) \
+	  $(SDL_BINDINGS_STATIC_LIB) \
 	  $(APP_RUNTIME_BRIDGE_OBJ) \
 	  $(APP_BRIDGE_OBJ) \
 		$(RESVG_LIB) \
