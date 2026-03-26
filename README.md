@@ -6,6 +6,18 @@ linked into iOS apps.
 
 It also includes:
 
+### Flappy bird
+
+A flappy bird clone that uses SDL to render the game.
+
+```
+make -C example-flappy run-sim-app
+```
+
+This is the game running in the iOS simulator:
+
+https://github.com/user-attachments/assets/05215072-60f6-4cef-9fff-9e5d9b611874
+
 ### A SDL iOS app 
 
 This app demonstrates a Lean program that uses SDL to make an SDL app with animated 2D graphics.
@@ -49,3 +61,5 @@ The build works as follows:
 - `make -C example-app run-sim-app` - starts a simulator, deploys / runs the iOS example app
 - `make -C example-sdl-app sim-app` - build the example-sdl-app for iOS simulator 
 - `make -C example-sdl-app run-sim-app` - starts a simulator, deploys / runs the iOS example SDL app
+- `make -C example-flappy sim-app` - build flappy bird for iOS simulator 
+- `make -C example-flappy run-sim-app` - starts a simulator, deploys / runs the flappy bird app
