@@ -68,7 +68,7 @@ APP_LAUNCH_STORYBOARD_DEST := $(APP_DIR)/LaunchScreen.storyboard
 APP_ASSETS_DEST_DIR := $(APP_DIR)/assets
 APP_ASSET_STAMP := $(APP_DIR)/.assets-stamp
 
-APP_PROJECT_CFLAGS := -Wall -Werror
+APP_PROJECT_CFLAGS := -Wall -Werror -O2
 
 .PHONY: runtime sdl3-xcframework app-lib app
 
@@ -116,6 +116,7 @@ $(SDL_TTF_XCFRAMEWORK_INFO):
 	  -destination 'generic/platform=iOS Simulator' \
 	  -derivedDataPath $(abspath $(SDL_TTF_BUILD_DIR))/DerivedData \
 	  CLANG_MODULE_CACHE_PATH=$(abspath $(SDL_TTF_MODULE_CACHE_DIR)) \
+	  GCC_OPTIMIZATION_LEVEL=3 \
 	  BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
 	  SKIP_INSTALL=NO
 	HOME=$(abspath $(SDL_TTF_BUILD_HOME)) xcodebuild archive \
@@ -126,6 +127,7 @@ $(SDL_TTF_XCFRAMEWORK_INFO):
 	  -destination 'generic/platform=iOS' \
 	  -derivedDataPath $(abspath $(SDL_TTF_BUILD_DIR))/DerivedData \
 	  CLANG_MODULE_CACHE_PATH=$(abspath $(SDL_TTF_MODULE_CACHE_DIR)) \
+	  GCC_OPTIMIZATION_LEVEL=3 \
 	  BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
 	  SKIP_INSTALL=NO
 	HOME=$(abspath $(SDL_TTF_BUILD_HOME)) xcodebuild -create-xcframework \
