@@ -15,17 +15,21 @@ LIB_DIR := $(IOS_BUILD_DIR)/lib
 RUNTIME_LIB := $(LEAN_RUNTIME_BUILD_DIR)/lib/lean/libleanrt.a
 STAGE0_STDLIB_DIR := $(LEAN_SRC_DIR)/stage0/stdlib
 STDLIB_INIT_LIB_LEANMAKE := $(LIB_DIR)/libInit.a
+STDLIB_STD_LIB_LEANMAKE := $(LIB_DIR)/libStd.a
+STDLIB_LEAN_LIB_LEANMAKE := $(LIB_DIR)/libLean.a
 
 AR := xcrun --sdk $(IOS_SDK) ar
 IOS_LEANC := $(abspath scripts/ios-leanc.sh)
 
-.PHONY: all runtime stdlib-init clean
+.PHONY: all runtime stdlib-init stdlib-std stdlib-lean clean
 
-all: runtime stdlib-init
+all: runtime stdlib-init stdlib-std stdlib-lean
 
 runtime: $(RUNTIME_LIB)
 
 stdlib-init: $(STDLIB_INIT_LIB_LEANMAKE)
+stdlib-std: $(STDLIB_STD_LIB_LEANMAKE)
+stdlib-lean: $(STDLIB_LEAN_LIB_LEANMAKE)
 
 $(RUNTIME_LIB):
 	cmake -S $(LEAN_SRC_DIR)/src -B $(LEAN_RUNTIME_BUILD_DIR) -G "Unix Makefiles" \
@@ -55,6 +59,48 @@ $(STDLIB_INIT_LIB_LEANMAKE): $(RUNTIME_LIB) $(IOS_LEANC)
 	  LEANC="$(IOS_LEANC)" \
 	  LEAN_AR="$(AR)" \
 	  PKG=Init \
+	  C_ONLY=1 \
+	  C_OUT=. \
+	  OUT="$(abspath $(IOS_BUILD_DIR))/leanmake" \
+	  TEMP_OUT="$(abspath $(IOS_BUILD_DIR))/leanmake/temp" \
+	  LIB_OUT="$(abspath $(LIB_DIR))"
+
+$(STDLIB_STD_LIB_LEANMAKE): $(STDLIB_INIT_LIB_LEANMAKE)
+	mkdir -p $(LIB_DIR)
+	cd $(STAGE0_STDLIB_DIR) && \
+	IOS_SDK="$(IOS_SDK)" \
+	IOS_TARGET="$(IOS_TARGET)" \
+	IOS_DEPLOYMENT_TARGET="$(IOS_DEPLOYMENT_TARGET)" \
+	LEAN_RUNTIME_INCLUDE="$(abspath $(LEAN_RUNTIME_BUILD_DIR))/include" \
+	LEAN_STAGE0_INCLUDE="$(abspath $(LEAN_SRC_DIR))/stage0/src/include" \
+	LEAN_SRC_INCLUDE="$(abspath $(LEAN_SRC_DIR))/src/include" \
+	$(LEAN_PREFIX)/bin/leanmake \
+	  lib \
+		-j8 \
+	  LEANC="$(IOS_LEANC)" \
+	  LEAN_AR="$(AR)" \
+	  PKG=Std \
+	  C_ONLY=1 \
+	  C_OUT=. \
+	  OUT="$(abspath $(IOS_BUILD_DIR))/leanmake" \
+	  TEMP_OUT="$(abspath $(IOS_BUILD_DIR))/leanmake/temp" \
+	  LIB_OUT="$(abspath $(LIB_DIR))"
+
+$(STDLIB_LEAN_LIB_LEANMAKE): $(STDLIB_STD_LIB_LEANMAKE)
+	mkdir -p $(LIB_DIR)
+	cd $(STAGE0_STDLIB_DIR) && \
+	IOS_SDK="$(IOS_SDK)" \
+	IOS_TARGET="$(IOS_TARGET)" \
+	IOS_DEPLOYMENT_TARGET="$(IOS_DEPLOYMENT_TARGET)" \
+	LEAN_RUNTIME_INCLUDE="$(abspath $(LEAN_RUNTIME_BUILD_DIR))/include" \
+	LEAN_STAGE0_INCLUDE="$(abspath $(LEAN_SRC_DIR))/stage0/src/include" \
+	LEAN_SRC_INCLUDE="$(abspath $(LEAN_SRC_DIR))/src/include" \
+	$(LEAN_PREFIX)/bin/leanmake \
+	  lib \
+		-j8 \
+	  LEANC="$(IOS_LEANC)" \
+	  LEAN_AR="$(AR)" \
+	  PKG=Lean \
 	  C_ONLY=1 \
 	  C_OUT=. \
 	  OUT="$(abspath $(IOS_BUILD_DIR))/leanmake" \
