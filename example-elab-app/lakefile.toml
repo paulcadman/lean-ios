@@ -1,0 +1,12 @@
+name = "example_elab_app"
+version = "0.1.0"
+defaultTargets = ["ExampleElabApp"]
+
+[leanOptions]
+autoImplicit = false
+
+[[lean_lib]]
+name = "ExampleElabApp"
+srcDir = "lean"
+roots = ["Example"]
+defaultFacets = ["static"]

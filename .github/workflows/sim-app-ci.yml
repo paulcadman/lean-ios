@@ -53,3 +53,6 @@ jobs:
 
       - name: Build example-bus-times sim app
         run: make -C example-bus-times sim-app
+
+      - name: Build example-elab-app sim app
+        run: make -C example-elab-app sim-app
