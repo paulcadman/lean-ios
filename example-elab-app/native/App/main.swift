@@ -16,6 +16,10 @@ private struct ContentView: View {
     #check Nat.succ
 
     example : 1 = 1 := rfl
+
+    def foo (n : Nat) : Nat := n + 1
+
+    #eval foo 1
     """
 
   @State private var output = "No messages yet."
@@ -27,7 +31,7 @@ private struct ContentView: View {
 
       VStack(alignment: .leading, spacing: 18) {
         VStack(alignment: .leading, spacing: 10) {
-          Text("Lean Elab")
+          Text("iOS Lean")
             .font(.system(size: 34, weight: .black, design: .rounded))
             .foregroundStyle(.primary)
         }
@@ -35,7 +39,7 @@ private struct ContentView: View {
         HStack(alignment: .center, spacing: 12) {
           Button(action: runCheck) {
             HStack(spacing: 8) {
-              Text("Elab Source")
+              Text("Run")
                 .font(.system(size: 15, weight: .bold, design: .rounded))
             }
             .padding(.horizontal, 16)

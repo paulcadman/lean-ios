@@ -5,13 +5,6 @@ import Lean.Util.Path
 
 open Lean Elab
 
-builtin_initialize leanIOSDisableCompilation : Unit ← do
-  -- Disable native code generation
-  Lean.compileDeclsRef.set (fun _ => pure ())
-  -- Disable command linters
-  Lean.Elab.Command.lintersRef.set #[]
-  pure ()
-
 private def formatMessages (messages : MessageLog) : IO String := do
   let lines ← messages.toList.mapM (m := BaseIO) Message.toString
   "\n\n".intercalate lines |> pure
@@ -21,7 +14,7 @@ private def collectMessages (snap : Language.SnapshotTree) : MessageLog :=
     messages ++ snapshot.diagnostics.msgLog
 
 @[export checkLeanSource]
-unsafe def checkLeanSource (bundleRoot : @& String) (input : @& String) : IO String := do
+def checkLeanSource (bundleRoot : @& String) (input : @& String) : IO String := do
   try
     searchPathRef.set [System.FilePath.mk bundleRoot / "lib" / "lean"]
     let opts := Options.empty
