@@ -31,7 +31,7 @@ stdlib-init: $(STDLIB_INIT_LIB_LEANMAKE)
 stdlib-std: $(STDLIB_STD_LIB_LEANMAKE)
 stdlib-lean: $(STDLIB_LEAN_LIB_LEANMAKE)
 
-$(RUNTIME_LIB):
+$(RUNTIME_LIB): $(LEAN_SRC_DIR)/src/CMakeLists.txt $(LEAN_SRC_DIR)/src/runtime/CMakeLists.txt $(LEAN_SRC_DIR)/src/config.h.in $(LEAN_SRC_DIR)/CMakeLists.txt Makefile
 	cmake -S $(LEAN_SRC_DIR)/src -B $(LEAN_RUNTIME_BUILD_DIR) -G "Unix Makefiles" \
 		-DSTAGE=0 \
 		-DCMAKE_SYSTEM_NAME=iOS \

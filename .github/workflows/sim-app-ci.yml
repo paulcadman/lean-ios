@@ -30,7 +30,7 @@ jobs:
 
       - name: Install Homebrew dependencies
         run: |
-          brew install cmake
+          brew install cmake zstd
 
       - name: Install Rust iOS targets
         run: |
@@ -53,3 +53,6 @@ jobs:
 
       - name: Build example-bus-times sim app
         run: make -C example-bus-times sim-app
+
+      - name: Build example-lean-ios-runner sim app
+        run: make -C example-lean-ios-runner sim-app

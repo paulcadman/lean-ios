@@ -1,0 +1,12 @@
+name = "lean_ios_runner"
+version = "0.1.0"
+defaultTargets = ["LeanIOSRunner"]
+
+[leanOptions]
+autoImplicit = false
+
+[[lean_lib]]
+name = "LeanIOSRunner"
+srcDir = "lean"
+roots = ["Runner"]
+defaultFacets = ["static"]
