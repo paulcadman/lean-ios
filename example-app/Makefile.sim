@@ -1,0 +1,27 @@
+.DEFAULT_GOAL := sim-app
+
+ROOT_DIR := ..
+
+SIMULATOR_SDK ?= iphonesimulator
+IOS_DEPLOYMENT_TARGET ?= 16.0
+SIMULATOR_TARGET ?= arm64-apple-ios$(IOS_DEPLOYMENT_TARGET)-simulator
+SIMULATOR_DEVICE ?= iPhone 16
+IOS_SDK := $(SIMULATOR_SDK)
+IOS_TARGET := $(SIMULATOR_TARGET)
+APP_MIN_VERSION_FLAG := -mios-simulator-version-min=$(IOS_DEPLOYMENT_TARGET)
+APP_BUILD_DIR := $(ROOT_DIR)/build/ios-sim-app
+
+include Makefile.common
+
+.PHONY: sim-app run-sim-app
+
+sim-app: app
+
+run-sim-app: sim-app
+	if ! xcrun simctl list devices booted | grep -q "Booted"; then \
+	  xcrun simctl boot "$(SIMULATOR_DEVICE)" >/dev/null 2>&1 || true; \
+	  open -a Simulator; \
+	  xcrun simctl bootstatus "$(SIMULATOR_DEVICE)" -b; \
+	fi
+	xcrun simctl install booted $(APP_DIR)
+	xcrun simctl launch booted $(APP_BUNDLE_ID)
