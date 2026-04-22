@@ -1,8 +1,16 @@
 # lean4-ios
 
-This repository ships a modified Lean 4 source tree so that the Lean runtime and
-stage0 standard library can be compiled with the iOS toolchain and linked into
-native iOS apps.
+This repository contains:
+
+1. A modified [Lean 4 source tree](lean4/) so that the Lean runtime and stage0
+standard library can be compiled with the iOS toolchain and linked into native
+iOS apps.
+
+2. [Lean Bindings for SDL3 / SDL3_ttf](sdl-bindings/).
+
+3. [common Makefiles and C framework](app-common/) for building iOS SDL3 apps.
+
+4. Some [examples](examples/) demonstrating how to use the framework.
 
 ## Gallery
 
