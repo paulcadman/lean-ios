@@ -1,7 +1,6 @@
 # lean4-ios
 
-Build iOS apps whose logic is written in [Lean 4](https://lean-lang.org/). This
-repository ships a modified Lean 4 source tree so that the Lean runtime and
+This repository ships a modified Lean 4 source tree so that the Lean runtime and
 stage0 standard library can be compiled with the iOS toolchain and linked into
 native iOS apps.
 
