@@ -1,67 +1,127 @@
-## lean4-ios
+# lean4-ios
 
-This repository contains a modified Lean4 source tree with changes to let the
-Lean runtime and stage0 standard library be built with the iOS toolchain and
-linked into iOS apps.
+Build iOS apps whose logic is written in [Lean 4](https://lean-lang.org/). This
+repository ships a modified Lean 4 source tree so that the Lean runtime and
+stage0 standard library can be compiled with the iOS toolchain and linked into
+native iOS apps.
 
-For an overview of the project structure and build dependencies, see [Architecture](docs/architecture.md).
+## Gallery
 
-It also includes:
+<table>
+  <tr>
+    <td width="50%">
+      <div align="center">
+        <b><a href="examples/flappy">flappy</a></b>
+        <br>
+        <video src="https://github.com/user-attachments/assets/689caed9-129b-4f28-a1c5-78c1c7b6434f"
+           width="240"
+           autoplay muted controls></video>
+        <br>
+        <sub>Flappy Bird clone rendered with SDL.</sub>
+      </div>
+    </td>
+    <td width="50%">
+      <div align="center">
+        <b><a href="examples/lean-ios-runner">lean-ios-runner</a></b>
+        <br>
+        <img src="assets/ios-lean-example.png" width="240"/>
+        <br>
+        <sub>On-device Lean elaborator / type-checker.</sub>
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <div align="center">
+        <b><a href="examples/sdl-app">sdl-app</a></b>
+        <br>
+        <video src="https://github.com/user-attachments/assets/7c1a2aa3-0069-45fc-9366-4f9f92c1c0f8"
+           width="240"
+           autoplay muted controls></video>
+        <br>
+        <sub>SDL iOS app with animated 2D graphics.</sub>
+      </div>
+    </td>
+    <td width="50%">
+      <div align="center">
+        <b><a href="examples/bus-times">bus-times</a></b>
+        <br>
+        <img src="assets/bus-times-example.png" width="240"/>
+        <br>
+        <sub>Live TfL bus arrivals fetched over HTTP, rendered with SDL.</sub>
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <div align="center">
+        <b><a href="examples/app">app</a></b>
+        <br>
+        <img src="assets/app-example.png" width="240"/>
+        <br>
+        <sub>Minimal Swift iOS app calling a Lean function via a C bridge.</sub>
+      </div>
+    </td>
+    <td></td>
+  </tr>
+</table>
 
-### Flappy bird
+## Dependencies
 
-A flappy bird clone that uses SDL to render the game.
+1. Clone the repo including submodules (`lean4`, SDL, SDL_ttf, and resvg live
+   as submodules under `lean4/` and `third-party/`):
 
-```
-make -C examples/flappy run-sim-app
-```
+   ```
+   git clone --recursive https://github.com/paulcadman/lean-ios.git
+   ```
 
-This is the game running in the iOS simulator:
+   Or, if you already cloned without `--recursive`:
 
-https://github.com/user-attachments/assets/05215072-60f6-4cef-9fff-9e5d9b611874
+   ```
+   git submodule update --init --recursive
+   ```
 
-### A SDL iOS app 
+2. Install [Xcode](https://developer.apple.com/xcode/).
 
-This app demonstrates a Lean program that uses SDL to make an SDL app with animated 2D graphics.
+3. Install the Xcode command line tools:
 
-```
-make -C examples/sdl-app run-sim-app
-```
+   ```
+   xcode-select --install
+   ```
 
-This is the SDL app running in an iOS simulator:
+4. Install [Homebrew](https://brew.sh/), then install the build dependencies:
 
-https://github.com/user-attachments/assets/aa9b99ea-b496-4393-a35a-fe3d0679409e
+   ```
+   brew install cmake zstd
+   ```
 
-## A minimal example iOS app
+5. Install [Rust](https://rustup.rs/) (the SDL-based examples link against
+   `resvg`, which is built from source):
 
-This app demonstrates how a Lean function can be called from an iOS app.
+   ```
+   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+   ```
 
-```
-make -C examples/app sim-app
-```
+   Then add the iOS targets:
 
-This is what the example app looks like:
+   ```
+   rustup target add aarch64-apple-ios-sim aarch64-apple-ios
+   ```
 
-![Screenshot of the simulator running the example app](assets/hello-lean.png)
+## Building for physical device
 
-The build works as follows:
+Each example has a `Makefile.device` target that codesigns and installs the app
+on a connected iOS device. Invoke it with `make -f Makefile.device
+run-device-app` and set the following environment variables:
 
-1. [examples/app/lean/Example.lean](examples/app/lean/Example.lean) is compiled to C.
-2. The generated C is compiled for the iOS target.
-3. [examples/app/native/LeanIOSBridge.cpp](examples/app/native/LeanIOSBridge.cpp)
-   initializes the Lean module and exposes a small C interface.
-4. [examples/app/native/App/main.swift](examples/app/native/App/main.swift) calls
-   that bridge from a native iOS app.
-5. The app is linked against the compiled Lean object, the iOS-built stage0
-   `libInit.a` and `libleanrt.a`.
-   
-## Useful Makefile targets:
+- `DEVICE_ID` — the device UDID or name (as shown by `xcrun devicectl list devices`).
+- `DEVICE_CODESIGN_IDENTITY` — the codesigning identity to use (e.g. `Apple
+  Development: Your Name (TEAMID)`, as shown by `security find-identity -v -p
+  codesigning`).
+- `DEVICE_PROVISION_PROFILE` — path to a `.mobileprovision` file whose bundle
+  identifier matches the example's `APP_BUNDLE_ID` (or `SDL_APP_BUNDLE_ID`).
 
-- `make runtime` - builds the Lean4 runtime for iOS
-- `make stdlib-init` - builds the Lean4 stage0 standard library for iOS
-- `make -C examples/app sim-app` - builds examples/app for iOS simulator
-- `make -C examples/app run-sim-app` - starts a simulator, deploys / runs the iOS example app
-- `make -C examples/sdl-app sim-app` - build the examples/sdl-app for iOS simulator 
-- `make -C examples/sdl-app run-sim-app` - starts a simulator, deploys / runs the iOS example SDL app
-- `make -C examples/flappy sim-app` - build flappy bird for iOS simulator 
-- `make -C examples/flappy run-sim-app` - starts a simulator, deploys / runs the flappy bird app
+## Architecture
+
+See [docs/architecture.md](docs/architecture.md) for an overview of the
+project structure and build dependencies.
