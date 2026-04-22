@@ -63,8 +63,17 @@ app-lib: runtime
 	IOS_DEPLOYMENT_TARGET="$(IOS_DEPLOYMENT_TARGET)" \
 	LEAN_RUNTIME_INCLUDE="$(abspath $(RUNTIME_BUILD_DIR))/include" \
 	LEAN_STAGE0_INCLUDE="$(abspath $(LEAN_SRC_DIR))/stage0/src/include" \
-	  LEAN_SRC_INCLUDE="$(abspath $(LEAN_SRC_DIR))/src/include" \
-	  lake build $(APP_LIB_TARGET)
+	LEAN_SRC_INCLUDE="$(abspath $(LEAN_SRC_DIR))/src/include" \
+	lake clean
+	LEAN_CC="$(abspath $(ROOT_DIR)/scripts/ios-leanc.sh)" \
+	LEAN_AR="$(abspath $(ROOT_DIR)/scripts/ios-ar.sh)" \
+	IOS_SDK="$(IOS_SDK)" \
+	IOS_TARGET="$(IOS_TARGET)" \
+	IOS_DEPLOYMENT_TARGET="$(IOS_DEPLOYMENT_TARGET)" \
+	LEAN_RUNTIME_INCLUDE="$(abspath $(RUNTIME_BUILD_DIR))/include" \
+	LEAN_STAGE0_INCLUDE="$(abspath $(LEAN_SRC_DIR))/stage0/src/include" \
+	LEAN_SRC_INCLUDE="$(abspath $(LEAN_SRC_DIR))/src/include" \
+	lake build $(APP_LIB_TARGET)
 	mkdir -p $(APP_BUILD_DIR)
 	cp "$$(lake query $(APP_LIB_TARGET))" $(APP_STATIC_LIB)
 
