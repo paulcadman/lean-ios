@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := sim-app
 
-ROOT_DIR := ..
+ROOT_DIR := ../..
 
 SIMULATOR_SDK ?= iphonesimulator
 IOS_DEPLOYMENT_TARGET ?= 16.0

@@ -45,14 +45,14 @@ jobs:
             build/ios-lean-arm64_apple_ios16_0_simulator/lib
           key: ${{ runner.os }}-${{ runner.arch }}-${{ steps.cache-keys.outputs.xcode_version }}-lean-ios-sim-${{ steps.cache-keys.outputs.lean4_sha }}-${{ hashFiles('lean-toolchain', 'Makefile', 'app-common/Makefile.common', 'scripts/ios-*.sh') }}
 
-      - name: Build example-sdl-app sim app
-        run: make -C example-sdl-app sim-app
+      - name: Build examples/sdl-app sim app
+        run: make -C examples/sdl-app sim-app
 
-      - name: Build example-flappy sim app
-        run: make -C example-flappy sim-app
+      - name: Build examples/flappy sim app
+        run: make -C examples/flappy sim-app
 
-      - name: Build example-bus-times sim app
-        run: make -C example-bus-times sim-app
+      - name: Build examples/bus-times sim app
+        run: make -C examples/bus-times sim-app
 
-      - name: Build example-lean-ios-runner sim app
-        run: make -C example-lean-ios-runner sim-app
+      - name: Build examples/lean-ios-runner sim app
+        run: make -C examples/lean-ios-runner sim-app

@@ -13,7 +13,7 @@ It also includes:
 A flappy bird clone that uses SDL to render the game.
 
 ```
-make -C example-flappy run-sim-app
+make -C examples/flappy run-sim-app
 ```
 
 This is the game running in the iOS simulator:
@@ -25,7 +25,7 @@ https://github.com/user-attachments/assets/05215072-60f6-4cef-9fff-9e5d9b611874
 This app demonstrates a Lean program that uses SDL to make an SDL app with animated 2D graphics.
 
 ```
-make -C example-sdl-app run-sim-app
+make -C examples/sdl-app run-sim-app
 ```
 
 This is the SDL app running in an iOS simulator:
@@ -37,7 +37,7 @@ https://github.com/user-attachments/assets/aa9b99ea-b496-4393-a35a-fe3d0679409e
 This app demonstrates how a Lean function can be called from an iOS app.
 
 ```
-make -C example-app sim-app
+make -C examples/app sim-app
 ```
 
 This is what the example app looks like:
@@ -46,11 +46,11 @@ This is what the example app looks like:
 
 The build works as follows:
 
-1. [example-app/lean/Example.lean](example-app/lean/Example.lean) is compiled to C.
+1. [examples/app/lean/Example.lean](examples/app/lean/Example.lean) is compiled to C.
 2. The generated C is compiled for the iOS target.
-3. [example-app/native/LeanIOSBridge.cpp](example-app/native/LeanIOSBridge.cpp)
+3. [examples/app/native/LeanIOSBridge.cpp](examples/app/native/LeanIOSBridge.cpp)
    initializes the Lean module and exposes a small C interface.
-4. [example-app/native/App/main.swift](example-app/native/App/main.swift) calls
+4. [examples/app/native/App/main.swift](examples/app/native/App/main.swift) calls
    that bridge from a native iOS app.
 5. The app is linked against the compiled Lean object, the iOS-built stage0
    `libInit.a` and `libleanrt.a`.
@@ -59,9 +59,9 @@ The build works as follows:
 
 - `make runtime` - builds the Lean4 runtime for iOS
 - `make stdlib-init` - builds the Lean4 stage0 standard library for iOS
-- `make -C example-app sim-app` - builds example-app for iOS simulator
-- `make -C example-app run-sim-app` - starts a simulator, deploys / runs the iOS example app
-- `make -C example-sdl-app sim-app` - build the example-sdl-app for iOS simulator 
-- `make -C example-sdl-app run-sim-app` - starts a simulator, deploys / runs the iOS example SDL app
-- `make -C example-flappy sim-app` - build flappy bird for iOS simulator 
-- `make -C example-flappy run-sim-app` - starts a simulator, deploys / runs the flappy bird app
+- `make -C examples/app sim-app` - builds examples/app for iOS simulator
+- `make -C examples/app run-sim-app` - starts a simulator, deploys / runs the iOS example app
+- `make -C examples/sdl-app sim-app` - build the examples/sdl-app for iOS simulator 
+- `make -C examples/sdl-app run-sim-app` - starts a simulator, deploys / runs the iOS example SDL app
+- `make -C examples/flappy sim-app` - build flappy bird for iOS simulator 
+- `make -C examples/flappy run-sim-app` - starts a simulator, deploys / runs the flappy bird app

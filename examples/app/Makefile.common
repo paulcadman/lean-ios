@@ -1,48 +1,27 @@
-ROOT_DIR := ..
+ROOT_DIR := ../..
 
 LEAN_SRC_DIR := $(ROOT_DIR)/lean4
 IOS_DEPLOYMENT_TARGET ?= 16.0
 IOS_TARGET_TAG := $(subst -,_,$(subst .,_,$(IOS_TARGET)))
-APP_BUNDLE_ID ?= dev.paulcadman.LeanIOSRunner
-APP_NAME := LeanIOSRunner
+APP_BUNDLE_ID ?= dev.paulcadman.LeanIOSExample
+APP_NAME := LeanIOSExample
 
 BUILD_DIR := $(ROOT_DIR)/build
 RUNTIME_BUILD_DIR := $(BUILD_DIR)/lean4-$(IOS_TARGET_TAG)-runtime
-RUNTIME_LIB := $(RUNTIME_BUILD_DIR)/lib/lean/libleanrt.a
-RUNTIME_CPP_LIB := $(RUNTIME_BUILD_DIR)/lib/lean/libleancpp.a
-RUNTIME_SHELL_LIB := $(RUNTIME_BUILD_DIR)/lib/temp/libleanshell.a
-RUNTIME_INIT_LIB := $(RUNTIME_BUILD_DIR)/lib/temp/libleaninitialize.a
 IOS_BUILD_DIR := $(BUILD_DIR)/ios-lean-$(IOS_TARGET_TAG)
+RUNTIME_LIB := $(RUNTIME_BUILD_DIR)/lib/lean/libleanrt.a
 STDLIB_INIT_LIB := $(IOS_BUILD_DIR)/lib/libInit.a
-STDLIB_STD_LIB := $(IOS_BUILD_DIR)/lib/libStd.a
-STDLIB_LEAN_LIB := $(IOS_BUILD_DIR)/lib/libLean.a
 IOS_SDK_PATH := $(shell xcrun --sdk $(IOS_SDK) --show-sdk-path)
-LEAN4_RELEASE_REPO ?= paulcadman/lean4
-LEAN4_IOS_ARTIFACT_TAG ?= ios-artifacts-v4.29.0
-LEAN4_OLEANS_REV ?= $(shell git -C $(LEAN_SRC_DIR) rev-parse --short=12 HEAD)
-HOST_OLEAN_ARCHIVE_NAME := lean4-host-oleans-macos-$(LEAN4_OLEANS_REV).tar.zst
-HOST_OLEAN_URL := https://github.com/$(LEAN4_RELEASE_REPO)/releases/download/$(LEAN4_IOS_ARTIFACT_TAG)/$(HOST_OLEAN_ARCHIVE_NAME)
-HOST_OLEAN_DOWNLOAD_DIR := $(BUILD_DIR)/downloads
-HOST_OLEAN_ARCHIVE := $(HOST_OLEAN_DOWNLOAD_DIR)/$(HOST_OLEAN_ARCHIVE_NAME)
-HOST_OLEAN_CACHE_DIR := $(BUILD_DIR)/host-oleans/$(LEAN4_IOS_ARTIFACT_TAG)-$(LEAN4_OLEANS_REV)
-HOST_OLEAN_EXTRACT_STAMP := $(HOST_OLEAN_CACHE_DIR)/.extract-stamp
-HOST_OLEAN_DIR := $(HOST_OLEAN_CACHE_DIR)/lean4-host-oleans-macos/lib/lean
 
 APP_LEAN_DIR := lean
 APP_NATIVE_DIR := native
-APP_BUILD_DIR := $(BUILD_DIR)/ios-elab-app-$(IOS_TARGET_TAG)
 APP_OBJ_DIR := $(APP_BUILD_DIR)/obj
 APP_MODULE_CACHE_DIR := $(APP_BUILD_DIR)/module-cache
 APP_DIR := $(APP_BUILD_DIR)/$(APP_NAME).app
 APP_BIN := $(APP_DIR)/$(APP_NAME)
 APP_INFO_PLIST := $(APP_DIR)/Info.plist
-APP_LAUNCH_STORYBOARD_SRC := $(APP_NATIVE_DIR)/App/LaunchScreen.storyboard
-APP_LAUNCH_STORYBOARD_DEST := $(APP_DIR)/LaunchScreen.storyboard
-APP_LEAN_LIB_DIR := $(APP_DIR)/lib/lean
-APP_LEAN_LIB_STAMP := $(APP_DIR)/.lean-lib-stamp
-APP_LIB_TARGET := LeanIOSRunner:static
+APP_LIB_TARGET := ExampleApp:static
 APP_LAKE_BUILD_DIR := .lake/build
-APP_STATIC_LIB := $(APP_BUILD_DIR)/libLeanIOSRunner.a
 APP_BRIDGE_SRC := $(APP_NATIVE_DIR)/LeanIOSBridge.cpp
 APP_BRIDGE_HEADER := $(APP_NATIVE_DIR)/LeanIOSBridge.h
 APP_BRIDGE_OBJ := $(APP_OBJ_DIR)/LeanIOSBridge.o
@@ -52,10 +31,9 @@ APP_INFO_PLIST_SRC := $(APP_NATIVE_DIR)/App/Info.plist
 .PHONY: runtime app-lib app clean
 
 runtime:
-	$(MAKE) -C $(ROOT_DIR) IOS_SDK="$(IOS_SDK)" IOS_TARGET="$(IOS_TARGET)" IOS_DEPLOYMENT_TARGET="$(IOS_DEPLOYMENT_TARGET)" runtime stdlib-init stdlib-std stdlib-lean
+	$(MAKE) -C $(ROOT_DIR) IOS_SDK="$(IOS_SDK)" IOS_TARGET="$(IOS_TARGET)" IOS_DEPLOYMENT_TARGET="$(IOS_DEPLOYMENT_TARGET)" runtime stdlib-init
 
 app-lib: runtime
-	cmake --build $(RUNTIME_BUILD_DIR) --target leancpp leanshell leaninitialize -j4
 	LEAN_CC="$(abspath $(ROOT_DIR)/scripts/ios-leanc.sh)" \
 	LEAN_AR="$(abspath $(ROOT_DIR)/scripts/ios-ar.sh)" \
 	IOS_SDK="$(IOS_SDK)" \
@@ -74,8 +52,6 @@ app-lib: runtime
 	LEAN_STAGE0_INCLUDE="$(abspath $(LEAN_SRC_DIR))/stage0/src/include" \
 	LEAN_SRC_INCLUDE="$(abspath $(LEAN_SRC_DIR))/src/include" \
 	lake build $(APP_LIB_TARGET)
-	mkdir -p $(APP_BUILD_DIR)
-	cp "$$(lake query $(APP_LIB_TARGET))" $(APP_STATIC_LIB)
 
 $(APP_BRIDGE_OBJ): $(APP_BRIDGE_SRC) $(APP_BRIDGE_HEADER)
 	mkdir -p $(APP_OBJ_DIR)
@@ -93,6 +69,7 @@ $(APP_BRIDGE_OBJ): $(APP_BRIDGE_SRC) $(APP_BRIDGE_HEADER)
 
 $(APP_BIN): app-lib $(APP_BRIDGE_OBJ) $(APP_MAIN_SRC)
 	mkdir -p $(APP_DIR) $(APP_MODULE_CACHE_DIR)
+	APP_LIB_PATH="$$(lake query $(APP_LIB_TARGET))"; \
 	xcrun --sdk $(IOS_SDK) swiftc \
 	  -parse-as-library \
 	  -target $(IOS_TARGET) \
@@ -100,46 +77,20 @@ $(APP_BIN): app-lib $(APP_BRIDGE_OBJ) $(APP_MAIN_SRC)
 	  -module-cache-path $(APP_MODULE_CACHE_DIR) \
 	  -import-objc-header $(APP_BRIDGE_HEADER) \
 	  $(APP_MAIN_SRC) \
-	  $(APP_STATIC_LIB) \
+	  "$$APP_LIB_PATH" \
 	  $(APP_BRIDGE_OBJ) \
 	  $(STDLIB_INIT_LIB) \
-	  $(STDLIB_STD_LIB) \
-	  $(STDLIB_LEAN_LIB) \
-	  $(RUNTIME_CPP_LIB) \
-	  $(RUNTIME_SHELL_LIB) \
-	  $(RUNTIME_INIT_LIB) \
 	  $(RUNTIME_LIB) \
 	  -framework UIKit \
 	  -framework Foundation \
-	  -Xlinker -export_dynamic \
 	  -Xlinker -lc++ \
 	  -o $(APP_BIN)
-
-$(HOST_OLEAN_ARCHIVE):
-	mkdir -p $(HOST_OLEAN_DOWNLOAD_DIR)
-	curl -fL --retry 3 --output $(HOST_OLEAN_ARCHIVE) $(HOST_OLEAN_URL)
-
-$(HOST_OLEAN_EXTRACT_STAMP): $(HOST_OLEAN_ARCHIVE)
-	rm -rf $(HOST_OLEAN_CACHE_DIR)
-	mkdir -p $(HOST_OLEAN_CACHE_DIR)
-	zstd -d -c $(HOST_OLEAN_ARCHIVE) | tar -xf - -C $(HOST_OLEAN_CACHE_DIR)
-	test -f $(HOST_OLEAN_DIR)/Lean/Elab/Frontend.olean
-	touch $(HOST_OLEAN_EXTRACT_STAMP)
-
-$(APP_LEAN_LIB_STAMP): $(HOST_OLEAN_EXTRACT_STAMP)
-	mkdir -p $(APP_LEAN_LIB_DIR)
-	rsync -a --delete $(HOST_OLEAN_DIR)/ $(APP_LEAN_LIB_DIR)/
-	touch $(APP_LEAN_LIB_STAMP)
 
 $(APP_INFO_PLIST): $(APP_INFO_PLIST_SRC)
 	mkdir -p $(APP_DIR)
 	cp $(APP_INFO_PLIST_SRC) $(APP_INFO_PLIST)
 
-$(APP_LAUNCH_STORYBOARD_DEST): $(APP_LAUNCH_STORYBOARD_SRC)
-	mkdir -p $(APP_DIR)
-	cp $(APP_LAUNCH_STORYBOARD_SRC) $(APP_LAUNCH_STORYBOARD_DEST)
-
-app: $(APP_BIN) $(APP_INFO_PLIST) $(APP_LAUNCH_STORYBOARD_DEST) $(APP_LEAN_LIB_STAMP)
+app: $(APP_BIN) $(APP_INFO_PLIST)
 
 clean:
 	rm -rf $(APP_BUILD_DIR) $(APP_LAKE_BUILD_DIR)

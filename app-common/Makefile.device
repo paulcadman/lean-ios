@@ -12,7 +12,7 @@ DEVICE_PROVISION_PROFILE ?=
 DEVICE_CODESIGN_FLAGS ?= --timestamp=none
 APP_ENTITLEMENTS = $(APP_BUILD_DIR)/$(APP_NAME).entitlements
 
-include ../app-common/Makefile.common
+include ../../app-common/Makefile.common
 
 .PHONY: device-runtime device-app-lib device-app run-device-app clean
 

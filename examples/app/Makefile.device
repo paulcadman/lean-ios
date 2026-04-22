@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := device-app
 
-ROOT_DIR := ..
+ROOT_DIR := ../..
 
 IOS_SDK ?= iphoneos
 IOS_DEPLOYMENT_TARGET ?= 16.0
