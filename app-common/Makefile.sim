@@ -10,7 +10,7 @@ APP_MIN_VERSION_FLAG ?= -mios-simulator-version-min=$(IOS_DEPLOYMENT_TARGET)
 SIMULATOR_DEVICE ?= iPhone 16
 RESVG_CARGO_TARGET ?= aarch64-apple-ios-sim
 
-include ../app-common/Makefile.common
+include ../../app-common/Makefile.common
 
 .PHONY: sim-app run-sim-app clean
 

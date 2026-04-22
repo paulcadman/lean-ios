@@ -6,7 +6,7 @@
    "name": "sdl_bindings",
    "manifestFile": "lake-manifest.json",
    "inherited": false,
-   "dir": "../sdl-bindings",
+   "dir": "../../sdl-bindings",
    "configFile": "lakefile.lean"}],
  "name": "example_sdl_app",
  "lakeDir": ".lake"}

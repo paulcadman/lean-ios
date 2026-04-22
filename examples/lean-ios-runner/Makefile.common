@@ -1,4 +1,4 @@
-ROOT_DIR := ..
+ROOT_DIR := ../..
 
 LEAN_SRC_DIR := $(ROOT_DIR)/lean4
 IOS_DEPLOYMENT_TARGET ?= 16.0

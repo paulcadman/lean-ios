@@ -16,7 +16,7 @@
    "name": "sdl_bindings",
    "manifestFile": "lake-manifest.json",
    "inherited": false,
-   "dir": "../sdl-bindings",
+   "dir": "../../sdl-bindings",
    "configFile": "lakefile.lean"},
   {"url": "https://github.com/leanprover-community/batteries.git",
    "type": "git",
